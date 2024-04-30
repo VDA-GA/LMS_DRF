@@ -6,17 +6,17 @@ from lms.models import Course, Lesson
 class LessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
-        fields = ['id', 'name', 'description', 'picture', 'course', 'creator']
+        fields = ["id", "name", "description", "picture", "course", "creator"]
 
 
 class CourseCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
-        fields = ['id', 'title', 'description', 'picture']
+        fields = ["id", "title", "description", "picture"]
 
 
 class CourseSerializer(serializers.ModelSerializer):
-    lesson = LessonSerializer(source='lesson_set', many=True, read_only=True)
+    lesson = LessonSerializer(source="lesson_set", many=True, read_only=True)
     lesson_count = serializers.SerializerMethodField()
 
     def get_lesson_count(self, course):
@@ -24,4 +24,4 @@ class CourseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Course
-        fields = ['id', 'title', 'description', 'picture', 'lesson_count', 'lesson', 'creator']
+        fields = ["id", "title", "description", "picture", "lesson_count", "lesson", "creator"]

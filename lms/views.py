@@ -2,8 +2,8 @@ from rest_framework import generics, viewsets
 from rest_framework.permissions import IsAuthenticated
 
 from lms.models import Course, Lesson
-from lms.serializers import CourseSerializer, LessonSerializer, CourseCreateSerializer
-from users.permissions import UserIsModerator, IsCreator, UserIsNotModerator
+from lms.serializers import CourseCreateSerializer, CourseSerializer, LessonSerializer
+from users.permissions import IsCreator, UserIsModerator, UserIsNotModerator
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -15,18 +15,18 @@ class CourseViewSet(viewsets.ModelViewSet):
         course.save()
 
     def get_serializer_class(self):
-        if self.request.method == 'POST':
+        if self.request.method == "POST":
             return CourseCreateSerializer
         return CourseSerializer
 
     def get_permissions(self):
-        if self.action in ['create']:
+        if self.action == "create":
             self.permission_classes = [~UserIsModerator]
-        elif self.action in ['destroy', 'update']:
+        elif self.action == "destroy":
             self.permission_classes = [UserIsNotModerator & IsCreator]
-        elif self.action == 'retrieve':
+        elif self.action in ["update", "retrieve"]:
             self.permission_classes = [UserIsModerator | IsCreator]
-        elif self.action == 'list':
+        elif self.action == "list":
             self.permission_classes = [IsAuthenticated]
         return super().get_permissions()
 
