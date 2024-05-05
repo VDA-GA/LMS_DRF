@@ -2,11 +2,14 @@ from rest_framework import generics, viewsets
 from rest_framework.permissions import IsAuthenticated
 
 from lms.models import Course, Lesson
+from lms.paginators import CustomPagination
 from lms.serializers import CourseCreateSerializer, CourseSerializer, LessonSerializer
 from users.permissions import IsCreator, UserIsModerator, UserIsNotModerator
 
 
 class CourseViewSet(viewsets.ModelViewSet):
+    pagination_class = CustomPagination
+
     def get_queryset(self):
         if self.request.user.groups.filter(name="Moderators").exists():
             queryset = Course.objects.all()
@@ -48,6 +51,7 @@ class LessonCreateAPIView(generics.CreateAPIView):
 
 class LessonListAPIView(generics.ListAPIView):
     serializer_class = LessonSerializer
+    pagination_class = CustomPagination
 
     def get_queryset(self):
         if self.request.user.groups.filter(name="Moderators").exists():
