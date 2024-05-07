@@ -5,6 +5,7 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from drf_yasg.utils import swagger_auto_schema
 
 from lms.models import Course
 from users.models import Payment, Subscription, User
@@ -55,6 +56,7 @@ class UserDestroyAPIView(generics.DestroyAPIView):
 
 
 class SubscriptionAPIView(APIView):
+    @swagger_auto_schema(operation_description="Add or remove the subscription on a course")
     def post(self, *args, **kwargs):
         user = self.request.user
         course_id = self.request.data.get("id")

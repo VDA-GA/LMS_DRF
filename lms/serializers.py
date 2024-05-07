@@ -1,5 +1,5 @@
 from rest_framework import serializers
-
+from drf_yasg.utils import swagger_serializer_method
 from lms.models import Course, Lesson
 from lms.validators import validate_video_link
 from users.models import Subscription
@@ -24,12 +24,14 @@ class CourseSerializer(serializers.ModelSerializer):
     lesson = LessonSerializer(source="lesson_set", many=True, read_only=True)
     lesson_count = serializers.SerializerMethodField()
 
+    @swagger_serializer_method(serializer_or_field=serializers.CharField)
     def get_subscription(self, course):
         if Subscription.objects.filter(course=course):
             return "подписан"
         else:
             return "не подписан"
 
+    @swagger_serializer_method(serializer_or_field=serializers.IntegerField)
     def get_lesson_count(self, course):
         return course.lesson_set.count()
 
