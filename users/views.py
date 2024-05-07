@@ -10,6 +10,7 @@ from drf_yasg.utils import swagger_auto_schema
 from lms.models import Course
 from users.models import Payment, Subscription, User
 from users.serializers import PaymentSerializer, UserSerializer
+from users.services import create_stripe_product, create_stripe_price, create_stripe_session
 
 
 class PaymentListAPIView(generics.ListAPIView):
@@ -23,6 +24,20 @@ class PaymentListAPIView(generics.ListAPIView):
 class PaymentRetrieveAPIView(generics.RetrieveAPIView):
     serializer_class = PaymentSerializer
     queryset = Payment.objects.all()
+
+
+class PaymentCreateAPIView(generics.CreateAPIView):
+    serializer_class = PaymentSerializer
+    queryset = Payment.objects.all()
+
+    def perform_create(self, serializer):
+        payment = serializer.save(user=self.request.user, method="перевод на карту")
+        product = create_stripe_product(payment.course)
+        price = create_stripe_price(product=product, amount=payment.amount)
+        session_id, session_url = create_stripe_session(price)
+        payment.session_id = session_id
+        payment.payment_link = session_url
+        payment.save()
 
 
 class UserCreateAPIView(generics.CreateAPIView):
