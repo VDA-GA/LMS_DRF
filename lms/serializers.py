@@ -1,5 +1,6 @@
-from rest_framework import serializers
 from drf_yasg.utils import swagger_serializer_method
+from rest_framework import serializers
+
 from lms.models import Course, Lesson
 from lms.validators import validate_video_link
 from users.models import Subscription
