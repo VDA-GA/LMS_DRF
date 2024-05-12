@@ -1,9 +1,12 @@
-from rest_framework import generics, viewsets
+from django.shortcuts import get_object_or_404
+from rest_framework import generics, viewsets, status
 from rest_framework.permissions import IsAuthenticated
-
+from rest_framework.response import Response
 from lms.models import Course, Lesson
 from lms.paginators import CustomPagination
 from lms.serializers import CourseCreateSerializer, CourseSerializer, LessonSerializer
+from lms.tasks import send_email_about_update
+from users.models import Subscription
 from users.permissions import IsCreator, UserIsModerator, UserIsNotModerator
 
 
@@ -37,6 +40,18 @@ class CourseViewSet(viewsets.ModelViewSet):
         elif self.action == "list":
             self.permission_classes = [IsAuthenticated]
         return super().get_permissions()
+
+    def partial_update(self, request, pk=None, *args, **kwargs):
+        queryset = Course.objects.all()
+        course = get_object_or_404(queryset, pk=pk)
+        serializer = CourseSerializer(course, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            subs = Subscription.objects.filter(course=course.pk)
+            email = subs[0].user.email
+            send_email_about_update.delay(email, course.title)
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LessonCreateAPIView(generics.CreateAPIView):
